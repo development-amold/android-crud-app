@@ -11,6 +11,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.webkit.WebViewClient;
+import android.view.KeyEvent;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         if (!isNetworkAvailable()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("@mol-Internet Connection Required").setCancelable(true).setPositiveButton("Exit",
+            builder.setMessage("AMOL-Internet Connection Required").setCancelable(true).setPositiveButton("Exit",
                     new DialogInterface.OnClickListener() {
                         public void onClick(
                                 DialogInterface dialog,
@@ -47,8 +49,15 @@ public class MainActivity extends AppCompatActivity {
 //            alert.show();
             myWebView = findViewById(R.id.myWebView);
             myWebView.getSettings().setJavaScriptEnabled(true);
+            myWebView.setWebViewClient(new MyWebViewClient());  //useful for opening links in the webView instead of Browser
+//            myWebView.getSettings().setAppCacheEnabled(true);
+            myWebView.getSettings().setDomStorageEnabled(true);  // for web related storage such cookies, sessions etc.. and Setting the DOM Storage value to false will prevents local storage from being used.
             myWebView.loadUrl("https://react-crud-node.herokuapp.com");
         }
+    }
+
+    private class MyWebViewClient extends WebViewClient{
+        //we can override this method for opening any external link in the WebView instead of Browser
     }
 
     // Private class isNetworkAvailable
@@ -59,6 +68,18 @@ public class MainActivity extends AppCompatActivity {
         NetworkInfo activeNetworkInfo = connectivityManager
                 .getActiveNetworkInfo();
         return activeNetworkInfo != null;
+    }
+
+    // For Back & Forward button of App -- imported keyEvent package
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // Check if the key event was the Back button and if there's history
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && myWebView.canGoBack()) {
+            myWebView.goBack();
+            return true;
+        }
+        // If it wasn't the Back key or there's no web page history, bubble up to the default
+        // system behavior (probably exit the activity)
+        return super.onKeyDown(keyCode, event);
     }
 
 }
